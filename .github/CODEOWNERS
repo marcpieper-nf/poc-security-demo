@@ -1,0 +1,4 @@
+# CODEOWNERS file
+# This file is to designate code ownership for the entire repository to marcpieper-nf
+
+* @marcpieper-nf
