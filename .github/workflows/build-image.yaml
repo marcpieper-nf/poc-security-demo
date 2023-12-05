@@ -1,0 +1,16 @@
+name: Build Image
+
+on:
+  pull_request:
+    branches: main
+  workflow_dispatch:
+
+jobs:         
+  build-image:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Build Image
+        run: docker build -t test-image:latest .
