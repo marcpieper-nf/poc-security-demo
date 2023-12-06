@@ -14,3 +14,27 @@ jobs:
 
       - name: Build Image
         run: docker build -t test-image:latest .
+  
+  trivy-container-scan:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Build Image
+        run: docker build -t test-image:latest .
+
+      - name: Run Trivy vulnerability scanner in docker mode
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: test-image:latest
+          format: 'table'
+          exit-code: '0'  # change to '1' if you want pipeline to fail if vulnerabilities of states severity is found
+          ignore-unfixed: false
+          vuln-type: 'os,library'
+          severity: 'CRITICAL,HIGH'
+
+      - name: Upload Trivy scan results to GitHub Security tab
+        uses: github/codeql-action/upload-sarif@v2
+        with:
+          sarif_file: 'trivy-results.sarif'
