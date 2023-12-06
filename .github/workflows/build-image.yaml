@@ -15,27 +15,48 @@ jobs:
       - name: Build Image
         run: docker build -t test-image:latest .
   
-  trivy-container-scan:
+  analyze:
+    name: Analyze
     runs-on: ubuntu-latest
+    permissions:
+      # required for all workflows
+      security-events: write
+    strategy:
+      fail-fast: false
+      matrix:
+        # Override automatic language detection by changing the below list
+        # Supported options are go, javascript, csharp, python, cpp, and java
+        language:
+          - python
+        # Learn more...
+        # https://docs.github.com/en/github/finding-security-vulnerabilities-and-errors-in-your-code/configuring-code-scanning#overriding-automatic-language-detection
+
     steps:
-      - name: Checkout code
+      - name: Checkout repository
         uses: actions/checkout@v3
 
-      - name: Build Image
-        run: docker build -t test-image:latest .
-
-      - name: Run Trivy vulnerability scanner in docker mode
-        uses: aquasecurity/trivy-action@master
+      # Initializes the CodeQL tools for scanning.
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v2
         with:
-          image-ref: test-image:latest
-          format: 'table'
-          exit-code: '0'  # change to '1' if you want pipeline to fail if vulnerabilities of states severity is found
-          ignore-unfixed: false
-          vuln-type: 'os,library'
-          severity: 'CRITICAL,HIGH'
+          languages: ${{ matrix.language }}
 
-      - name: Upload Trivy scan results to GitHub Security tab
-        uses: github/codeql-action/upload-sarif@v2
-        if: always()
-        with:
-          sarif_file: 'trivy-results.sarif'
+      # Autobuild attempts to build any compiled languages (C/C++, C#, or
+      # Java). If this step fails, then you should remove it and run the build
+      # manually (see below).
+      - name: Autobuild
+        uses: github/codeql-action/autobuild@v2
+
+      # ℹ️ Command-line programs to run using the OS shell.
+      # 📚 https://git.io/JvXDl
+
+      # ✏️ If the Autobuild fails above, remove it and uncomment the following
+      #    three lines and modify them (or add more) to build your code if your
+      #    project uses a compiled language
+
+      # - run: |
+      #     make bootstrap
+      #     make release
+
+      - name: Perform CodeQL Analysis
+        uses: github/codeql-action/analyze@v2
